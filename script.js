@@ -28,6 +28,11 @@ function calculateBottomPosition(object) {
     return bottomPos;
 }
 
+function updateDisplay() {
+    scoreDisplay.textContent = `Score: ${score}`;
+    timerDisplay.textContent = `Time: ${timeLeft}`;
+}
+
 function startFalling(object) {
     let interval = setInterval(() => {
         let bottomPos = calculateBottomPosition(object);
