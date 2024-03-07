@@ -1,14 +1,34 @@
 body, html {
-    height: 100%;
     margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden; /* Prevents scrolling */
+    display: flex;
+    flex-direction: column; /* Aligns items in a column */
+}
+
+#header {
+    display: flex;
+    justify-content: space-around; /* Spaces out the score and timer */
+    align-items: center;
+    background-color: #444; /* Adds a background color for contrast */
+    color: white; /* Changes the text color to white for visibility */
+    padding: 10px 0; /* Adds some padding above and below */
+}
+
+#score, #timer {
+    font-size: 20px; /* Increases the font size for better readability */
 }
 
 #game-container {
-    width: 100vw;
-    height: 100vh;
-    position: relative;
-    overflow: hidden;
+    flex-grow: 1; /* Allows the container to fill the rest of the screen */
+    position: relative; /* Needed for absolute positioning of children */
     background-color: lightgrey;
+    overflow: hidden; /* Ensures no internal scrolling */
+    display: flex;
+    justify-content: center;
+    align-items: flex-end; /* Aligns the falling emojis at the bottom */
 }
 
 .falling-object {
