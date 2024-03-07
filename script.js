@@ -1,4 +1,7 @@
+let timerInterval = null;
+let createObjectsInterval = null;
 const gameContainer = document.getElementById('game-container');
+const startButton = document.getElementById('start-button');
 const scoreDisplay = document.getElementById('score');
 const timerDisplay = document.getElementById('timer');
 
@@ -7,11 +10,6 @@ let timeLeft = 60;
 let selectedObjects = [];
 const emojis = ['🍎', '🍌', '🍇', '🍊', '🍒', '💣']; // Including the bomb emoji
 let fallSpeed = 2; // Control the falling speed of the emojis
-
-function updateDisplay() {
-    scoreDisplay.textContent = `Score: ${score}`;
-    timerDisplay.textContent = `Time: ${timeLeft}`;
-}
 
 // This function is used to calculate the bottom position of the emojis and make them stop to simulate piling up
 function calculateBottomPosition(object) {
@@ -87,10 +85,41 @@ function startTimer() {
     }, 1000);
 }
 
-function startGame() {
-    updateDisplay();
-    startTimer();
-    setInterval(createObject, 5000); // Continuously create objects
+function clearGameArea() {
+    gameContainer.innerHTML = ''; // Clear the game area
+    gameContainer.appendChild(startButton); // Add the start button back
 }
 
-startGame();
+function endGame() {
+    clearInterval(timerInterval);
+    clearInterval(createObjectsInterval);
+    clearGameArea(); // Clears the game area and shows the start button
+    const endMessage = document.createElement('div');
+    endMessage.textContent = `Game Over! Your score was ${score}.`;
+    endMessage.style.position = 'absolute';
+    endMessage.style.top = '40%';
+    endMessage.style.left = '50%';
+    endMessage.style.transform = 'translate(-50%, -50%)';
+    endMessage.style.fontSize = '20px';
+    gameContainer.appendChild(endMessage);
+}
+
+function startGame() {
+    clearGameArea(); // Ensure the game area is clear before starting
+    timeLeft = 60; // Reset time
+    score = 0; // Reset score
+    updateDisplay();
+
+    timerInterval = setInterval(() => {
+        if (timeLeft <= 0) {
+            endGame();
+        } else {
+            timeLeft--;
+            updateDisplay();
+        }
+    }, 1000);
+
+    createObjectsInterval = setInterval(createObject, 5000); // Adjust as needed
+}
+
+startButton.addEventListener('click', startGame);

@@ -31,6 +31,21 @@ body, html {
     align-items: flex-end; /* Aligns the falling emojis at the bottom */
 }
 
+#start-button {
+    font-size: 30px; /* Increase font size for better visibility */
+    cursor: pointer; /* Change cursor to pointer to indicate it's clickable */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Center the button */
+    padding: 10px 20px;
+    border-radius: 10px;
+    background-color: #fff; /* Light background to stand out */
+    border: 2px solid #000; /* Optional: add border */
+    user-select: none; /* Prevents text selection */
+}
+
+
 .falling-object {
     position: absolute;
     bottom: 0;
