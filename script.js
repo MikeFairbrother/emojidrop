@@ -6,16 +6,28 @@ let score = 0;
 let timeLeft = 60;
 let selectedObjects = [];
 
-const emojis = ['🍎', '🍌', '🍇', '🍊', '🍒'];
+const emojis = ['🍎', '🍌', '🍇', '🍊', '🍒', '💣']; // Added bomb emoji
 
 function updateDisplay() {
     scoreDisplay.textContent = `Score: ${score}`;
     timerDisplay.textContent = `Time: ${timeLeft}`;
 }
 
-function clearSelectedEmojis() {
-    selectedObjects.forEach(obj => obj.remove());
+function clearSelectedEmojis(bomb = false, bombObject = null) {
+    if (bomb && bombObject) {
+        const bombIndex = Array.from(gameContainer.children).indexOf(bombObject);
+        const emojisToRemove = [bombIndex - 1, bombIndex, bombIndex + 1]; // Example logic to remove emojis around the bomb
+        emojisToRemove.forEach(index => {
+            if (gameContainer.children[index]) {
+                gameContainer.removeChild(gameContainer.children[index]);
+            }
+        });
+        score += 10; // Increase score by 10 for bomb
+    } else {
+        selectedObjects.forEach(obj => obj.remove());
+    }
     selectedObjects = [];
+    updateDisplay();
 }
 
 function checkForMatch() {
@@ -23,10 +35,8 @@ function checkForMatch() {
         if (selectedObjects.every((val, _, arr) => val.textContent === arr[0].textContent)) {
             score++;
             timeLeft += 3;
-            updateDisplay();
             clearSelectedEmojis();
         } else {
-            // If they do not match, deselect them (this can be changed based on game design)
             selectedObjects.forEach(obj => obj.classList.remove('selected'));
             selectedObjects = [];
         }
@@ -41,24 +51,22 @@ function createObject() {
         object.classList.add('falling-object');
         const objectIndex = Math.floor(Math.random() * emojis.length);
         object.textContent = emojis[objectIndex];
-        object.style.left = `${Math.floor(Math.random() * 100)}vw`;
+        object.style.left = `${Math.floor(Math.random() * 90) + 5}vw`;
         gameContainer.appendChild(object);
 
-        let position = 0;
-        const fallInterval = setInterval(() => {
-            if (position >= 100) {
-                clearInterval(fallInterval);
-                gameContainer.removeChild(object);
-            } else {
-                position++;
-                object.style.bottom = `${position}%`;
-            }
-        }, 100);
+        // Handle bomb emoji differently
+        if (object.textContent === '💣') {
+            object.classList.add('bomb');
+        }
 
         object.addEventListener('click', () => {
+            if (object.textContent === '💣') {
+                clearSelectedEmojis(true, object); // Handle bomb click
+                return;
+            }
             if (!selectedObjects.includes(object)) {
                 selectedObjects.push(object);
-                object.classList.add('selected'); // Add a class to visually indicate selection
+                object.classList.add('selected');
             }
             checkForMatch();
         });
@@ -80,12 +88,7 @@ function startTimer() {
 function startGame() {
     updateDisplay();
     startTimer();
-    createObject(); // Adjust how often emojis fall based on game design
-    setInterval(() => {
-        if (gameContainer.children.length < 30) { // Avoid overcrowding the screen
-            createObject();
-        }
-    }, 5000); // Adjust timing as needed
+    setInterval(createObject, 5000); // Continuously create objects
 }
 
 startGame();

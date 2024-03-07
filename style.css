@@ -1,26 +1,37 @@
 body, html {
     height: 100%;
     margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
 }
 
 #game-container {
     width: 100vw;
-    height: 80vh;
+    height: 100vh;
     position: relative;
     overflow: hidden;
     background-color: lightgrey;
 }
 
 .falling-object {
-    font-size: 40px; /* Adjust as needed */
-    line-height: 50px; /* Adjust to match font size if necessary */
-    /* Other styles remain the same */
+    position: absolute;
+    bottom: 0;
+    font-size: 40px; /* Adjust font size for better visibility */
 }
+
+.bomb {
+    color: purple; /* Make the bomb emoji glow purple */
+    animation: glow 1.5s infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 0 0 10px purple, 0 0 20px purple, 0 0 30px purple, 0 0 40px purple;
+    }
+    to {
+        text-shadow: 0 0 20px purple, 0 0 30px purple, 0 0 40px purple, 0 0 50px purple, 0 0 60px purple;
+    }
+}
+
 .selected {
-    transform: scale(1.2); /* Makes the emoji slightly larger */
-    opacity: 0.5; /* Makes the emoji semi-transparent */
+    transform: scale(1.2);
+    opacity: 0.5;
 }
