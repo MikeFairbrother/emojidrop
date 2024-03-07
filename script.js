@@ -5,42 +5,40 @@ const timerDisplay = document.getElementById('timer');
 let score = 0;
 let timeLeft = 60;
 let selectedObjects = [];
-
-const emojis = ['🍎', '🍌', '🍇', '🍊', '🍒', '💣']; // Added bomb emoji
+const emojis = ['🍎', '🍌', '🍇', '🍊', '🍒', '💣']; // Including the bomb emoji
+let fallSpeed = 2; // Control the falling speed of the emojis
 
 function updateDisplay() {
     scoreDisplay.textContent = `Score: ${score}`;
     timerDisplay.textContent = `Time: ${timeLeft}`;
 }
 
-function clearSelectedEmojis(bomb = false, bombObject = null) {
-    if (bomb && bombObject) {
-        const bombIndex = Array.from(gameContainer.children).indexOf(bombObject);
-        const emojisToRemove = [bombIndex - 1, bombIndex, bombIndex + 1]; // Example logic to remove emojis around the bomb
-        emojisToRemove.forEach(index => {
-            if (gameContainer.children[index]) {
-                gameContainer.removeChild(gameContainer.children[index]);
+// This function is used to calculate the bottom position of the emojis and make them stop to simulate piling up
+function calculateBottomPosition(object) {
+    let bottomPos = window.innerHeight - object.offsetTop - object.offsetHeight;
+    // Check each emoji to see if it should stop because it "hits" another emoji
+    Array.from(gameContainer.children).forEach(child => {
+        if (child !== object) {
+            let childBottomPos = window.innerHeight - child.offsetTop - child.offsetHeight;
+            if (object.offsetLeft < child.offsetLeft + child.offsetWidth &&
+                object.offsetLeft + object.offsetWidth > child.offsetLeft &&
+                bottomPos < childBottomPos + fallSpeed) {
+                bottomPos = childBottomPos;
             }
-        });
-        score += 10; // Increase score by 10 for bomb
-    } else {
-        selectedObjects.forEach(obj => obj.remove());
-    }
-    selectedObjects = [];
-    updateDisplay();
+        }
+    });
+    return bottomPos;
 }
 
-function checkForMatch() {
-    if (selectedObjects.length === 3) {
-        if (selectedObjects.every((val, _, arr) => val.textContent === arr[0].textContent)) {
-            score++;
-            timeLeft += 3;
-            clearSelectedEmojis();
+function startFalling(object) {
+    let interval = setInterval(() => {
+        let bottomPos = calculateBottomPosition(object);
+        if (bottomPos <= 0) {
+            clearInterval(interval);
         } else {
-            selectedObjects.forEach(obj => obj.classList.remove('selected'));
-            selectedObjects = [];
+            object.style.transform = `translateY(${window.innerHeight - object.offsetTop - object.offsetHeight - bottomPos}px)`;
         }
-    }
+    }, 20);
 }
 
 function createObject() {
@@ -51,24 +49,28 @@ function createObject() {
         object.classList.add('falling-object');
         const objectIndex = Math.floor(Math.random() * emojis.length);
         object.textContent = emojis[objectIndex];
-        object.style.left = `${Math.floor(Math.random() * 90) + 5}vw`;
+        object.style.left = `${Math.floor(Math.random() * (gameContainer.offsetWidth - 40))}px`; // Ensuring emojis fall within the container width
         gameContainer.appendChild(object);
+        object.style.top = `${-object.offsetHeight}px`; // Start above the screen
 
-        // Handle bomb emoji differently
+        startFalling(object);
+
+        // Handle bomb emoji and selection
         if (object.textContent === '💣') {
             object.classList.add('bomb');
         }
 
         object.addEventListener('click', () => {
             if (object.textContent === '💣') {
-                clearSelectedEmojis(true, object); // Handle bomb click
+                // Special handling for bomb emoji
+                clearSelectedEmojis(true, object); // Implement this function based on previous example
                 return;
             }
             if (!selectedObjects.includes(object)) {
                 selectedObjects.push(object);
-                object.classList.add('selected');
+                object.classList.add('selected'); // Visual feedback for selection
+                checkForMatch(); // Implement match checking and scoring based on previous example
             }
-            checkForMatch();
         });
     }
 }
