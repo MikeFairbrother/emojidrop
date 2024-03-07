@@ -1,0 +1,22 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+#game-container {
+    width: 100vw;
+    height: 80vh;
+    position: relative;
+    overflow: hidden;
+    background-color: lightgrey;
+}
+
+.falling-object {
+    font-size: 40px; /* Adjust as needed */
+    line-height: 50px; /* Adjust to match font size if necessary */
+    /* Other styles remain the same */
+}
