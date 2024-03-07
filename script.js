@@ -1,130 +1,96 @@
-let timerInterval = null;
-let createObjectsInterval = null;
-const gameContainer = document.getElementById('game-container');
-const startButton = document.getElementById('start-button');
-const scoreDisplay = document.getElementById('score');
-const timerDisplay = document.getElementById('timer');
+document.addEventListener('DOMContentLoaded', () => {
+    const gameContainer = document.getElementById('game-container');
+    const scoreDisplay = document.getElementById('score');
+    const timerDisplay = document.getElementById('timer');
+    const startButton = document.createElement('div');
+    startButton.id = 'start-button';
+    startButton.textContent = '🎮 Start';
+    gameContainer.appendChild(startButton);
 
-let score = 0;
-let timeLeft = 60;
-let selectedObjects = [];
-const emojis = ['🍎', '🍌', '🍇', '🍊', '🍒', '💣']; // Including the bomb emoji
-let fallSpeed = 2; // Control the falling speed of the emojis
+    let score = 0;
+    let timeLeft = 60;
+    let timerInterval = null;
+    let emojisFallingInterval = null;
+    const emojis = ['🍎', '🍌', '🍇', '🍊', '🍒'];
+    const bombEmoji = '💣';
 
-// This function is used to calculate the bottom position of the emojis and make them stop to simulate piling up
-function calculateBottomPosition(object) {
-    let bottomPos = window.innerHeight - object.offsetTop - object.offsetHeight;
-    // Check each emoji to see if it should stop because it "hits" another emoji
-    Array.from(gameContainer.children).forEach(child => {
-        if (child !== object) {
-            let childBottomPos = window.innerHeight - child.offsetTop - child.offsetHeight;
-            if (object.offsetLeft < child.offsetLeft + child.offsetWidth &&
-                object.offsetLeft + object.offsetWidth > child.offsetLeft &&
-                bottomPos < childBottomPos + fallSpeed) {
-                bottomPos = childBottomPos;
-            }
-        }
-    });
-    return bottomPos;
-}
-
-function updateDisplay() {
-    scoreDisplay.textContent = `Score: ${score}`;
-    timerDisplay.textContent = `Time: ${timeLeft}`;
-}
-
-function startFalling(object) {
-    let interval = setInterval(() => {
-        let bottomPos = calculateBottomPosition(object);
-        if (bottomPos <= 0) {
-            clearInterval(interval);
-        } else {
-            object.style.transform = `translateY(${window.innerHeight - object.offsetTop - object.offsetHeight - bottomPos}px)`;
-        }
-    }, 20);
-}
-
-function createObject() {
-    const numberOfObjects = Math.floor(Math.random() * 21) + 10; // Between 10 and 30
-
-    for (let i = 0; i < numberOfObjects; i++) {
-        const object = document.createElement('div');
-        object.classList.add('falling-object');
-        const objectIndex = Math.floor(Math.random() * emojis.length);
-        object.textContent = emojis[objectIndex];
-        object.style.left = `${Math.floor(Math.random() * (gameContainer.offsetWidth - 40))}px`; // Ensuring emojis fall within the container width
-        gameContainer.appendChild(object);
-        object.style.top = `${-object.offsetHeight}px`; // Start above the screen
-
-        startFalling(object);
-
-        // Handle bomb emoji and selection
-        if (object.textContent === '💣') {
-            object.classList.add('bomb');
-        }
-
-        object.addEventListener('click', () => {
-            if (object.textContent === '💣') {
-                // Special handling for bomb emoji
-                clearSelectedEmojis(true, object); // Implement this function based on previous example
-                return;
-            }
-            if (!selectedObjects.includes(object)) {
-                selectedObjects.push(object);
-                object.classList.add('selected'); // Visual feedback for selection
-                checkForMatch(); // Implement match checking and scoring based on previous example
-            }
-        });
+    function updateDisplay() {
+        scoreDisplay.textContent = `Score: ${score}`;
+        timerDisplay.textContent = `Time: ${timeLeft}`;
     }
-}
 
-function startTimer() {
-    const timer = setInterval(() => {
-        if (timeLeft <= 0) {
-            clearInterval(timer);
-            alert(`Time's up! Your score was ${score}.`);
-        } else {
-            timeLeft--;
-            updateDisplay();
-        }
-    }, 1000);
-}
+    function clearGameArea() {
+        gameContainer.innerHTML = ''; // Clear the game area, removing all emojis
+    }
 
-function clearGameArea() {
-    gameContainer.innerHTML = ''; // Clear the game area
-    gameContainer.appendChild(startButton); // Add the start button back
-}
+    function endGame() {
+        clearInterval(timerInterval);
+        clearInterval(emojisFallingInterval);
+        clearGameArea(); // Clears the game area
 
-function endGame() {
-    clearInterval(timerInterval);
-    clearInterval(createObjectsInterval);
-    clearGameArea(); // Clears the game area and shows the start button
-    const endMessage = document.createElement('div');
-    endMessage.textContent = `Game Over! Your score was ${score}.`;
-    endMessage.style.position = 'absolute';
-    endMessage.style.top = '40%';
-    endMessage.style.left = '50%';
-    endMessage.style.transform = 'translate(-50%, -50%)';
-    endMessage.style.fontSize = '20px';
-    gameContainer.appendChild(endMessage);
-}
+        const endMessage = document.createElement('div');
+        endMessage.textContent = `Game Over! Your score was ${score}.`;
+        endMessage.id = 'end-message';
+        gameContainer.appendChild(endMessage);
+        gameContainer.appendChild(startButton); // Add the start button back
+        startButton.style.display = 'block'; // Ensure the start button is visible
+    }
 
-function startGame() {
-    clearGameArea(); // Ensure the game area is clear before starting
-    timeLeft = 60; // Reset time
-    score = 0; // Reset score
-    updateDisplay();
+    function startGame() {
+        clearGameArea(); // Ensure the game area is clear before starting
+        score = 0;
+        timeLeft = 60;
+        updateDisplay();
+        startButton.style.display = 'none'; // Hide the start button
 
-    timerInterval = setInterval(() => {
-        if (timeLeft <= 0) {
-            endGame();
-        } else {
-            timeLeft--;
-            updateDisplay();
-        }
-    }, 1000);
+        timerInterval = setInterval(() => {
+            if (timeLeft <= 0) {
+                endGame();
+            } else {
+                timeLeft--;
+                updateDisplay();
+            }
+        }, 1000);
 
-    createObjectsInterval = setInterval(createObject, 5000); // Adjust as needed
-}
+        emojisFallingInterval = setInterval(() => {
+            const emoji = document.createElement('div');
+            emoji.className = 'emoji';
+            emoji.textContent = Math.random() < 0.9 ? emojis[Math.floor(Math.random() * emojis.length)] : bombEmoji; // 10% chance for bomb
+            emoji.style.left = `${Math.floor(Math.random() * 90)}vw`;
+            emoji.style.top = '0';
+            gameContainer.appendChild(emoji);
 
-startButton.addEventListener('click', startGame);
+            let fallSpeed = 2;
+            function fall() {
+                const currentPosition = parseInt(emoji.style.top);
+                const nextPosition = currentPosition + fallSpeed;
+                emoji.style.top = `${nextPosition}px`;
+
+                // Stop falling if reaching the bottom of the game container
+                if (nextPosition + emoji.offsetHeight >= gameContainer.offsetHeight) {
+                    clearInterval(fallingInterval);
+                }
+            }
+            const fallingInterval = setInterval(fall, 20);
+
+            emoji.addEventListener('click', function() {
+                if (this.textContent === bombEmoji) {
+                    // Remove emojis around the bomb
+                    const bombPosition = { left: this.offsetLeft, top: this.offsetTop };
+                    Array.from(document.querySelectorAll('.emoji')).forEach(e => {
+                        if (Math.abs(e.offsetLeft - bombPosition.left) < 100 && Math.abs(e.offsetTop - bombPosition.top) < 100) {
+                            e.remove(); // Remove emojis close to the bomb
+                        }
+                    });
+                    score += 10; // Increase score for bomb
+                } else {
+                    score++;
+                }
+                this.remove(); // Remove the clicked emoji
+                updateDisplay();
+            });
+        }, 2000);
+    }
+
+    startButton.addEventListener('click', startGame);
+});
