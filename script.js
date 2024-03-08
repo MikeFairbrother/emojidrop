@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     clearInterval(fallInterval);
                 }
-            });
+            }, 50);
 
             // Update existingEmojiPositions on object creation
             existingEmojiPositions.push({
