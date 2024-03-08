@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function createObject() {
         if (!gameActive) return;
 
-        let numberOfObjects = Math.random() < 0.95 ? 10 : 20; // 95% chance to create 1 object, 5% for a bomb
+        let numberOfObjects = Math.random() < 0.2 ? 5 : 10; // 95% chance to create 1 object, 5% for a bomb
 
         for (let i = 0; i < numberOfObjects; i++) {
             const object = document.createElement('div');
@@ -67,25 +67,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let hasCollision = false;
 // Enhanced stacking logic:
-            let topPosition = 0; // Start at the top
+            let topPosition = 0;
+            let lowestTopPosition = Infinity; // Initialize to a high value
 
             for (let i = 0; i < existingEmojiPositions.length; i++) {
                 const existingPosition = existingEmojiPositions[i];
                 const buffer = 10; // Adjust buffer zone for potential overlap
 
                 if (Math.abs(object.offsetLeft - existingPosition.left) < object.offsetWidth + buffer) {
-                    // Emoji is aligned horizontally with an existing one
                     topPosition = Math.max(topPosition, existingPosition.top); // Find the highest bottom-left corner
+                    lowestTopPosition = Math.min(lowestTopPosition, existingPosition.top); // Track the lowest top position
                 }
             }
+
+            const newTopPosition = topPosition > lowestTopPosition ? topPosition : lowestTopPosition - object.offsetHeight;
+            object.style.top = newTopPosition + 'px'; // Position the new emoji based on stacking logic
+
+            gameContainer.appendChild(object);
 
             // If no collision, use the randomly generated position
             if (!hasCollision) {
                 object.style.left = `${Math.floor(Math.random() * (gameContainer.offsetWidth - 40))}px`;
                 object.style.top = '-50px';
             }
-
-            gameContainer.appendChild(object);
 
             object.addEventListener('click', function() {
                 if (this.textContent === bombEmoji) {
