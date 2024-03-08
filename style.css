@@ -46,7 +46,7 @@ body, html {
 }
 
 
-.falling-object {
+.falling-object .emoji {
     position: absolute;
     bottom: 0;
     font-size: 40px; /* Adjust font size for better visibility */
