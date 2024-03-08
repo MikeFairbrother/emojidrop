@@ -9,6 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let gameActive = false;
     const emojis = ['🍎', '🍌', '🍇', '🍊', '🍒'];
     const bombEmoji = '💣';
+    let existingEmojiPositions = [];
+
 
     startButton.id = 'start-button';
     startButton.textContent = '🎮 Start';
@@ -58,11 +60,32 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 0; i < numberOfObjects; i++) {
             const object = document.createElement('div');
             object.classList.add('emoji');
-            // Simplify object creation to focus on falling mechanics
+            // Removed inline style
             object.textContent = emojis[Math.floor(Math.random() * emojis.length)];
             object.style.position = 'absolute';
-            object.style.left = `${Math.floor(Math.random() * (gameContainer.offsetWidth - 40))}px`; // Adjusted to ensure it's within container width
-            object.style.top = '-50px'; // Start above the game container
+
+            let hasCollision = false;
+
+            // Check for collisions with existing emojis
+            for (let i = 0; i < existingEmojiPositions.length; i++) {
+                const existingPosition = existingEmojiPositions[i];
+                const buffer = 10; // Adjust buffer zone for potential overlap
+
+                if (Math.abs(object.offsetLeft - existingPosition.left) < object.offsetWidth + buffer &&
+                    Math.abs(object.offsetTop - existingPosition.top) < object.offsetHeight + buffer) {
+                    // Collision detected, adjust position slightly
+                    object.style.top = existingPosition.top - object.offsetHeight + 'px';
+                    hasCollision = true;
+                    break;
+                }
+            }
+
+            // If no collision, use the randomly generated position
+            if (!hasCollision) {
+                object.style.left = `${Math.floor(Math.random() * (gameContainer.offsetWidth - 40))}px`;
+                object.style.top = '-50px';
+            }
+
             gameContainer.appendChild(object);
 
             object.addEventListener('click', function() {
@@ -94,6 +117,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     clearInterval(fallInterval);
                 }
+            });
+
+            // Update existingEmojiPositions on object creation
+            existingEmojiPositions.push({
+                left: object.offsetLeft,
+                top: object.offsetTop + object.offsetHeight
             });
         }
     }
