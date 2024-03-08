@@ -45,12 +45,6 @@ body, html {
     user-select: none; /* Prevents text selection */
 }
 
-.emoji {
-    position: absolute;
-    bottom: 0;
-    font-size: 40px; /* Adjust font size for better visibility */
-}
-
 .falling-object {
     position: absolute;
     bottom: 0;
