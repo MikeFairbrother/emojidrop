@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function clearGameArea() {
         gameContainer.innerHTML = ''; // Clear the game area
         gameContainer.appendChild(startButton); // Add the start button back
-        startButton.style.display = 'block'; // Show start button
+        startButton.style.display = 'none'; // Show start button
     }
 
     function endGame() {
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selectedObjects.length === 3) {
             if (selectedObjects.every(val => val.textContent === selectedObjects[0].textContent)) {
                 score++;
-                timeLeft += 3; // Add time for a correct match
+                timeLeft += 5; // Add time for a correct match
                 selectedObjects.forEach(obj => obj.remove());
             } else {
                 selectedObjects.forEach(obj => obj.classList.remove('selected')); // Deselect if not matching
