@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function endGame() {
+        startButton.style.display = 'block';
         gameActive = false;
         clearGameArea(); // Clears the game area and shows the start button
         const endMessage = document.createElement('div');
