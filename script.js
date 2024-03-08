@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function createObject() {
         if (!gameActive) return;
 
-        let numberOfObjects = Math.random() < 0.95 ? 1 : 2; // 95% chance to create 1 object, 5% for a bomb
+        let numberOfObjects = Math.random() < 0.95 ? 10 : 20; // 95% chance to create 1 object, 5% for a bomb
 
         for (let i = 0; i < numberOfObjects; i++) {
             const object = document.createElement('div');
@@ -66,18 +66,16 @@ document.addEventListener('DOMContentLoaded', () => {
             object.style.position = 'absolute';
 
             let hasCollision = false;
+// Enhanced stacking logic:
+            let topPosition = 0; // Start at the top
 
-            // Check for collisions with existing emojis
             for (let i = 0; i < existingEmojiPositions.length; i++) {
                 const existingPosition = existingEmojiPositions[i];
                 const buffer = 10; // Adjust buffer zone for potential overlap
 
-                if (Math.abs(object.offsetLeft - existingPosition.left) < object.offsetWidth + buffer &&
-                    Math.abs(object.offsetTop - existingPosition.top) < object.offsetHeight + buffer) {
-                    // Collision detected, adjust position slightly
-                    object.style.top = existingPosition.top - object.offsetHeight + 'px';
-                    hasCollision = true;
-                    break;
+                if (Math.abs(object.offsetLeft - existingPosition.left) < object.offsetWidth + buffer) {
+                    // Emoji is aligned horizontally with an existing one
+                    topPosition = Math.max(topPosition, existingPosition.top); // Find the highest bottom-left corner
                 }
             }
 
@@ -143,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const gameLoop = setInterval(() => {
             if (!gameActive) clearInterval(gameLoop);
             createObject();
-        }, 2000); // Adjust frequency of emoji generation
+        }, 1000); // Adjust frequency of emoji generation
 
         // Timer logic
         const timer = setInterval(() => {
