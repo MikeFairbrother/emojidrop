@@ -53,39 +53,39 @@ document.addEventListener('DOMContentLoaded', () => {
     function createObject() {
         if (!gameActive) return;
 
-        const object = document.createElement('div');
-        object.classList.add('emoji');
-        // Simplify object creation to focus on falling mechanics
-        object.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-        object.style.position = 'absolute';
-        object.style.left = `${Math.floor(Math.random() * (gameContainer.offsetWidth - 40))}px`; // Adjusted to ensure it's within container width
-        object.style.top = '-50px'; // Start above the game container
-        gameContainer.appendChild(object);
+        let numberOfObjects = Math.random() < 0.95 ? 1 : 2; // 95% chance to create 1 object, 5% for a bomb
 
-        function fall() {
-            let currentTop = parseInt(object.style.top, 10);
-            let newTop = currentTop + 5; // Adjust the speed as necessary
+        for (let i = 0; i < numberOfObjects; i++) {
+            const object = document.createElement('div');
+            object.classList.add('emoji');
+            // Simplify object creation to focus on falling mechanics
+            object.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            object.style.position = 'absolute';
+            object.style.left = `${Math.floor(Math.random() * (gameContainer.offsetWidth - 40))}px`; // Adjusted to ensure it's within container width
+            object.style.top = '-50px'; // Start above the game container
+            gameContainer.appendChild(object);
 
-            // Check for bottom of the container or another emoji below
-            let bottomReached = newTop + object.offsetHeight >= gameContainer.offsetHeight;
-            let collisionDetected = Array.from(gameContainer.children).some(other => {
-                if (other !== object && other.offsetTop <= newTop + object.offsetHeight && other.offsetTop > currentTop) {
-                    return parseInt(other.style.left, 10) < parseInt(object.style.left, 10) + object.offsetWidth &&
-                        parseInt(other.style.left, 10) + other.offsetWidth > parseInt(object.style.left, 10);
+            object.addEventListener('click', function() {
+                if (this.textContent === bombEmoji) {
+                    gameContainer.querySelectorAll('.emoji').forEach(emoji => {
+                        if (Math.abs(emoji.offsetLeft - this.offsetLeft) < 100 && // Example proximity check
+                            Math.abs(emoji.offsetTop - this.offsetTop) < 100) {
+                            emoji.remove(); // Remove emojis close to the bomb
+                        }
+                    });
+                    this.remove(); // Remove the bomb itself
+                    score += 10; // Increase score for using the bomb
+                    updateDisplay();
+                } else {
+                    if (!selectedObjects.includes(this)) {
+                        this.classList.add('selected');
+                        selectedObjects.push(this);
+                        checkForMatch();
+                    }
                 }
-                return false;
             });
 
-            if (!bottomReached && !collisionDetected) {
-                object.style.top = `${newTop}px`;
-                requestAnimationFrame(fall); // Continue falling
-            }
-        }
-        fall();
-    }
-
-
-    // Animate the emoji falling
+            // Animate the emoji falling
             let posY = 0;
             const fallInterval = setInterval(() => {
                 if (posY < window.innerHeight - object.offsetHeight && gameActive) {
@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     clearInterval(fallInterval);
                 }
-            }, 50);
+            });
         }
     }
 
