@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function createObject() {
         if (!gameActive) return;
 
-        let numberOfObjects = Math.random() < 0.2 ? 5 : 10; // 95% chance to create 1 object, 5% for a bomb
+        let numberOfObjects = Math.random() < 0.2 ? 1 : 2; // 95% chance to create 1 object, 5% for a bomb
 
         for (let i = 0; i < numberOfObjects; i++) {
             const object = document.createElement('div');
