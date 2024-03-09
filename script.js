@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearGameArea(); // Clears the game area and shows the start button
         const endMessage = document.createElement('div');
         endMessage.textContent = `Game Over! Your score was ${score}.`;
-        endMessage.classList.add('end-message');
+        endMessage.classList.add('endMessage');
         gameContainer.appendChild(endMessage);
         startButton.textContent = 'Restart 🎮';
     }
@@ -56,45 +56,52 @@ document.addEventListener('DOMContentLoaded', () => {
     function createObject() {
         if (!gameActive) return;
 
-        let numberOfObjects = Math.random() < 0.2 ? 1 : 2; // 95% chance to create 1 object, 5% for a bomb
+        let numberOfObjects = Math.random() < 0.2 ? 1 : 2; // Adjusted for simplicity
 
         for (let i = 0; i < numberOfObjects; i++) {
             const object = document.createElement('div');
             object.classList.add('emoji');
-            // Removed inline style
             object.textContent = emojis[Math.floor(Math.random() * emojis.length)];
             object.style.position = 'absolute';
-
-            let hasCollision = false;
-// Enhanced stacking logic:
-            let topPosition = 0;
-            let lowestTopPosition = Infinity; // Initialize to a high value
-
-            for (let i = 0; i < existingEmojiPositions.length; i++) {
-                const existingPosition = existingEmojiPositions[i];
-                const buffer = 10; // Adjust buffer zone for potential overlap
-
-                if (Math.abs(object.offsetLeft - existingPosition.left) < object.offsetWidth + buffer) {
-                    topPosition = Math.max(topPosition, existingPosition.top); // Find the highest bottom-left corner
-                    lowestTopPosition = Math.min(lowestTopPosition, existingPosition.top); // Track the lowest top position
-                }
-            }
-
-            const newTopPosition = topPosition > lowestTopPosition ? topPosition : lowestTopPosition - object.offsetHeight;
-            object.style.top = newTopPosition + 'px'; // Position the new emoji based on stacking logic
-
+            object.style.left = `${Math.floor(Math.random() * (gameContainer.offsetWidth - object.offsetWidth))}px`; // Random horizontal position within container
+            object.style.top = `-50px`; // Start above the game container
             gameContainer.appendChild(object);
 
-            // If no collision, use the randomly generated position
-            if (!hasCollision) {
-                object.style.left = `${Math.floor(Math.random() * (gameContainer.offsetWidth - 40))}px`;
-                object.style.top = '-50px';
-            }
+            let posY = parseInt(object.style.top, 10); // Starting Y position
+
+            const fallInterval = setInterval(() => {
+                posY += 5; // Speed of falling
+                object.style.top = `${posY}px`; // Update Y position
+
+                // Check collision with the container bottom
+                if (posY + object.offsetHeight >= gameContainer.offsetHeight) {
+                    clearInterval(fallInterval);
+                } else {
+                    // Check collision with other emojis
+                    let collision = Array.from(gameContainer.querySelectorAll('.emoji')).some(other => {
+                        if (other !== object) {
+                            let rect1 = object.getBoundingClientRect();
+                            let rect2 = other.getBoundingClientRect();
+                            let overlap = !(rect1.right < rect2.left ||
+                                rect1.left > rect2.right ||
+                                rect1.bottom < rect2.top ||
+                                rect1.top > rect2.bottom);
+                            return overlap && rect1.top < rect2.bottom; // Check if the falling emoji is above and overlaps
+                        }
+                        return false;
+                    });
+
+                    if (collision) {
+                        clearInterval(fallInterval); // Stop falling if collision is detected
+                    }
+                }
+            }, 50);
+
 
             object.addEventListener('click', function() {
                 if (this.textContent === bombEmoji) {
                     gameContainer.querySelectorAll('.emoji').forEach(emoji => {
-                        if (Math.abs(emoji.offsetLeft - this.offsetLeft) < 100 && // Example proximity check
+                        if (Math.abs(emoji.offsetLeft - this.offsetLeft) < 100 &&
                             Math.abs(emoji.offsetTop - this.offsetTop) < 100) {
                             emoji.remove(); // Remove emojis close to the bomb
                         }
@@ -110,17 +117,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             });
-
-            // Animate the emoji falling
-            let posY = 0;
-            const fallInterval = setInterval(() => {
-                if (posY < window.innerHeight - object.offsetHeight && gameActive) {
-                    posY += 5; // Speed of falling
-                    object.style.transform = `translateY(${posY}px)`;
-                } else {
-                    clearInterval(fallInterval);
-                }
-            }, 50);
 
             // Update existingEmojiPositions on object creation
             existingEmojiPositions.push({
